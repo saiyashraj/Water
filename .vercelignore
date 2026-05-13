@@ -1,0 +1,15 @@
+__pycache__
+.git
+.gitignore
+.streamlit
+.env
+*.ipynb
+data/
+*.csv
+.DS_Store
+.venv
+env/
+venv/
+node_modules/
+.vercel
+*.pyc
