@@ -1,0 +1,9 @@
+[build]
+  command = "npm install && npm run build"
+  functions = "api"
+  publish = "public"
+
+[[redirects]]
+  from = "/predict"
+  to = "/.netlify/functions/predict"
+  status = 200
