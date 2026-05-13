@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaShield AI - Water Quality Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input[type="number"],
+        input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus,
+        input[type="range"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .slider-value {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .predict-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .reset-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .reset-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.potable {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .result.not-potable {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        .result h2 {
+            margin-bottom: 15px;
+        }
+        
+        .result.potable h2 {
+            color: #28a745;
+        }
+        
+        .result.not-potable h2 {
+            color: #dc3545;
+        }
+        
+        .confidence {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        
+        .confidence-bar {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💧 AquaShield AI</h1>
+            <p>Smart Water Quality Prediction System</p>
+        </div>
+        
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="ph">pH Level (0-14)</label>
+                <input type="range" id="ph" name="ph" min="0" max="14" step="0.1" value="7.0">
+                <div class="slider-value"><span id="phValue">7.0</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="hardness">Hardness (0-400)</label>
+                <input type="range" id="hardness" name="hardness" min="0" max="400" step="1" value="150">
+                <div class="slider-value"><span id="hardnessValue">150</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="solids">Total Dissolved Solids (0-50000)</label>
+                <input type="range" id="solids" name="solids" min="0" max="50000" step="100" value="15000">
+                <div class="slider-value"><span id="solidsValue">15000</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="chloramines">Chloramines (0-15)</label>
+                <input type="range" id="chloramines" name="chloramines" min="0" max="15" step="0.1" value="7">
+                <div class="slider-value"><span id="chloraminesValue">7</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sulfate">Sulfate (0-500)</label>
+                <input type="range" id="sulfate" name="sulfate" min="0" max="500" step="1" value="300">
+                <div class="slider-value"><span id="sulfateValue">300</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="conductivity">Conductivity (0-1000)</label>
+                <input type="range" id="conductivity" name="conductivity" min="0" max="1000" step="1" value="400">
+                <div class="slider-value"><span id="conductivityValue">400</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="organicCarbon">Organic Carbon (0-30)</label>
+                <input type="range" id="organicCarbon" name="organic_carbon" min="0" max="30" step="0.1" value="15">
+                <div class="slider-value"><span id="organicCarbonValue">15</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="trihalomethanes">Trihalomethanes (0-150)</label>
+                <input type="range" id="trihalomethanes" name="trihalomethanes" min="0" max="150" step="1" value="75">
+                <div class="slider-value"><span id="trihalomethanesValue">75</span></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="turbidity">Turbidity (0-10)</label>
+                <input type="range" id="turbidity" name="turbidity" min="0" max="10" step="0.1" value="5">
+                <div class="slider-value"><span id="turbidityValue">5</span></div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="predict-btn">🔮 Predict</button>
+                <button type="reset" class="reset-btn">↺ Reset</button>
+            </div>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing water quality...</p>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <script>
+        // Update slider values
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', function() {
+                document.getElementById(this.id + 'Value').textContent = this.value;
+            });
+        });
+        
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            try {
+                const params = new URLSearchParams({
+                    ph: form.ph.value,
+                    hardness: form.hardness.value,
+                    solids: form.solids.value,
+                    chloramines: form.chloramines.value,
+                    sulfate: form.sulfate.value,
+                    conductivity: form.conductivity.value,
+                    organic_carbon: form.organic_carbon.value,
+                    trihalomethanes: form.trihalomethanes.value,
+                    turbidity: form.turbidity.value
+                });
+                
+                const response = await fetch(`/predict?${params}`, {
+                    method: 'GET'
+                });
+                
+                if (!response.ok) throw new Error('Prediction failed');
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                const isPotable = data.potable === 1;
+                const confidence = (data.confidence * 100).toFixed(1);
+                
+                resultDiv.className = `result ${isPotable ? 'potable' : 'not-potable'}`;
+                resultDiv.innerHTML = `
+                    <h2>${isPotable ? '✓ Water is Potable' : '✗ Water is Not Potable'}</h2>
+                    <div class="confidence">Confidence: ${confidence}%</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${confidence}%">
+                            ${confidence}%
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                        <strong>Model Predictions:</strong><br>
+                        RF: ${(data.rf_prediction * 100).toFixed(1)}% | 
+                        XGB: ${(data.xgb_prediction * 100).toFixed(1)}% | 
+                        ISO: ${(data.iso_prediction * 100).toFixed(1)}%
+                    </p>
+                `;
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                loading.style.display = 'none';
+                resultDiv.className = 'result not-potable';
+                resultDiv.innerHTML = `<h2>Error</h2><p>${error.message}</p>`;
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
