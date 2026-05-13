@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: aquashield-ai
+    runtime: python
+    runtimeVersion: 3.12.1
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.index:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.1

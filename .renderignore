@@ -1,0 +1,17 @@
+.git
+.gitignore
+.streamlit
+.env
+*.ipynb
+data/
+*.csv
+.DS_Store
+.venv
+env/
+venv/
+node_modules/
+__pycache__
+*.pyc
+.vercel
+.vercelignore
+train_model.ipynb
